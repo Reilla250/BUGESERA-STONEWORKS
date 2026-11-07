@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum ProductCategory {
+  BUILDING_STONE
+  MACHINE_CUT
+  AGGREGATE
+  MANUFACTURED_SAND
+  SPECIALTY
+  CONCRETE_PRODUCT
+}
+
+enum QuoteStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  LOST
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  company      String?
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+
+  quotes Quote[]
+  orders Order[]
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  category    ProductCategory
+  summary     String
+  uses        String
+  unit        String          @default("tonne")
+  priceRwf    Int? // null = price on request
+  sizeSpec    String?
+  imageUrl    String?
+  active      Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+
+  quoteItems QuoteItem[]
+  orderItems OrderItem[]
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name        String
+  email       String
+  phone       String
+  company     String?
+  location    String
+  message     String?
+  status      QuoteStatus @default(NEW)
+  createdAt   DateTime    @default(now())
+
+  items       QuoteItem[]
+  attachments Attachment[]
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quoteId   String
+  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int // in product unit
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  quoteId   String
+  quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  url       String
+  publicId  String
+  filename  String
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  reference    String      @unique
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+  status       OrderStatus @default(PENDING_PAYMENT)
+  deliveryAddr String
+  totalRwf     Int
+  createdAt    DateTime    @default(now())
+
+  items    OrderItem[]
+  payments Payment[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Int
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  orderId     String
+  order       Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider    String
+  providerRef String?
+  amountRwf   Int
+  status      PaymentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+}

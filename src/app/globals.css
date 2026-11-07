@@ -1,0 +1,127 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/public-sans";
+
+@theme inline {
+  --color-basalt: #15171a;
+  --color-granite: #3a4047;
+  --color-slate: #d6d9d6;
+  --color-quartz: #f5f6f3;
+  --color-hivis: #f5b800;
+  --color-laterite: #8c3a22;
+  --font-display: "Archivo Variable", system-ui, sans-serif;
+  --font-sans: "Public Sans Variable", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--color-quartz);
+  color: var(--color-basalt);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+main {
+  width: 100%;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+}
+
+.font-display-narrow {
+  font-family: var(--font-display);
+  font-stretch: 75%;
+}
+
+/* Quarry bench strata used behind sections */
+.strata {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 46px,
+    rgba(255, 255, 255, 0.04) 46px 47px
+  );
+}
+
+.hero-video-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.08);
+  filter: saturate(0.8) contrast(1.08);
+}
+
+/* One orchestrated moment: sieve stones settle into their grades on load */
+@keyframes settle {
+  from {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.settle {
+  animation: settle 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 15px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  .font-display {
+    letter-spacing: -0.02em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .hero-video-bg {
+    animation: none;
+  }
+  .settle {
+    animation: none;
+  }
+}
