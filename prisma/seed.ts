@@ -1,11 +1,23 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import mariadb from "mariadb";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const db = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db" }),
+const connectionString = process.env.DATABASE_URL ?? "mysql://root:root@localhost:3306/bugesera";
+const url = new URL(connectionString);
+const pool = mariadb.createPool({
+  host: url.hostname,
+  port: Number(url.port || 3306),
+  user: decodeURIComponent(url.username),
+  password: decodeURIComponent(url.password),
+  database: url.pathname.replace(/^\//, ""),
+  ssl: { rejectUnauthorized: true },
+  connectionLimit: 10,
+  connectTimeout: 20000,
 });
+
+const db = new PrismaClient({ adapter: new PrismaMariaDb(pool) });
 
 const productImages = [
   "/hero/stone-1.webp",
@@ -52,4 +64,7 @@ async function main() {
   console.log(`Seeded ${products.length} products and admin ${email}`);
 }
 
-main().finally(() => db.$disconnect());
+main().finally(async () => {
+  await db.$disconnect();
+  await pool.end();
+});
